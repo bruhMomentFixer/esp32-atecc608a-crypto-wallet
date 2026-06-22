@@ -1,6 +1,6 @@
 # 🔐 ESP32 ATECC608A Crypto Wallet Prototype
 
-> Work-in-progress ESP32-based crypto wallet prototype with TFT display, serial-terminal control, partial joystick integration, PIN-based access control, EEPROM persistence, Wi-Fi configuration, and planned ATECC608A secure element support.
+> Work-in-progress ESP32-based crypto wallet prototype with TFT display, cross-platform serial-terminal control, partial joystick integration, PIN-based access control, EEPROM persistence, Wi-Fi configuration, and planned ATECC608A secure element support.
 
 [![License](https://img.shields.io/badge/License-PolyForm%20Noncommercial-blue.svg)](LICENSE)
 ![Status](https://img.shields.io/badge/Status-Work%20in%20Progress-orange)
@@ -18,7 +18,7 @@ The current implementation is a functional embedded prototype focused on:
 
 - Modular embedded firmware architecture
 - TFT-based wallet user interface
-- Serial terminal control through a Python helper
+- Cross-platform serial terminal control through a Python helper
 - Partial joystick input integration
 - PIN-based access control
 - EEPROM-backed prototype persistence
@@ -64,7 +64,10 @@ The current demo video shows the prototype being controlled through the Python s
 
 At this stage:
 
-- The Python terminal helper is experimental.
+- The Python terminal helper is experimental but now cross-platform.
+- The helper automatically selects the proper input backend depending on the operating system.
+- On Windows, it uses `msvcrt`.
+- On Linux/macOS, it uses `termios`, `tty`, and `select`.
 - The terminal display mirror is not perfect yet.
 - The video focuses on keyboard-arrow navigation through the Python tool.
 - Physical joystick support exists in the firmware and has a dedicated test sketch, but the joystick control mode is still being tested and is not the main demo path yet.
@@ -88,7 +91,7 @@ This project implements a prototype hardware crypto wallet on an ESP32.
 The device provides a small standalone interface using:
 
 - An ST7735S TFT display
-- Serial terminal input
+- Cross-platform serial terminal input
 - Partial HW-504 joystick input
 - PIN entry
 - Menu navigation
@@ -121,7 +124,7 @@ This makes the project easier to extend, debug, test, and eventually migrate fro
 - Saved Wi-Fi configuration in EEPROM.
 - Wi-Fi connectivity test.
 - Serial mirroring of display screens.
-- Python terminal client for host-side interaction.
+- Cross-platform Python terminal client for host-side interaction.
 - Helper sketches for LCD testing, joystick testing, and EEPROM clearing.
 - Planned ATECC608A secure element integration.
 
@@ -232,6 +235,33 @@ WCMCU ATECC608A
 
 > Note: wiring should be validated against the exact board revision and module pinout before reproducing the prototype, because ESP32 development boards and TFT display modules may expose pins differently depending on the manufacturer.
 
+## 🔗 USB-to-UART Driver
+
+The current ESP32 development board uses a CP2102 USB-to-UART bridge.
+
+On some systems, especially Windows, the board may not appear as a serial `COM` port until the Silicon Labs CP210x VCP driver is installed.
+
+Official driver download:
+
+```text
+https://www.silabs.com/software-and-tools/usb-to-uart-bridge-vcp-drivers
+```
+
+If the board is detected as `CP2102 USB to UART Bridge Controller` but no serial port appears, install or reinstall the CP210x VCP driver and reconnect the ESP32.
+
+Useful checks on Windows:
+
+```powershell
+py -m serial.tools.list_ports -v
+```
+
+```powershell
+[System.IO.Ports.SerialPort]::getportnames()
+```
+
+If no ports are listed, check Device Manager for `CP2102 USB to UART Bridge Controller`, `Silicon Labs CP210x`, or unknown USB serial devices.
+
+
 ## 🧱 Professional Software Architecture
 
 The firmware is designed using a modular, layered architecture instead of placing all logic directly inside the main Arduino sketch.
@@ -261,7 +291,7 @@ crypto-wallet-dual.ino
 │
 ├── Input Layer
 │   ├── InputManager
-│   │   ├── Serial terminal input
+│   │   ├── Cross-platform serial terminal input
 │   │   ├── Keyboard arrow parsing
 │   │   ├── ENTER/BACKSPACE/digit parsing
 │   │   ├── Joystick analog input
@@ -293,8 +323,13 @@ crypto-wallet-dual.ino
 │
 ├── Host Tooling
 │   └── wallet_terminal.py
-│       ├── Keyboard input forwarding
-│       ├── Arrow key forwarding
+│       ├── Cross-platform OS detection
+│       ├── Serial port listing
+│       ├── Windows input backend using msvcrt
+│       ├── Linux/macOS input backend using termios, tty, and select
+│       ├── Keyboard arrow forwarding
+│       ├── ENTER/BACKSPACE/digit forwarding
+│       ├── Optional DTR reset control
 │       └── Serial output display
 │
 └── Hardware Test Tools
@@ -483,7 +518,7 @@ Useful for resetting the prototype state during development.
 
 ## 💻 Host Terminal Client
 
-The repository includes an experimental Python helper:
+The repository includes an experimental cross-platform Python helper:
 
 ```text
 wallet_terminal.py
@@ -491,37 +526,107 @@ wallet_terminal.py
 
 This tool provides a host-side terminal interface for controlling the ESP32 over Serial.
 
-Features:
+The script detects the operating system at runtime and selects the appropriate keyboard input backend:
 
-- Opens the serial port.
-- Enters raw terminal mode.
-- Forwards arrow keys.
+| Operating system | Input backend |
+|---|---|
+| Windows | `msvcrt` |
+| Linux/macOS | `termios`, `tty`, and `select` |
+
+This avoids the original Windows compatibility issue where Unix-only modules such as `termios` and `tty` are not available.
+
+### Serial Driver Note
+
+The terminal helper requires the ESP32 board to appear as a serial port.
+
+For CP2102-based ESP32 development boards, install the Silicon Labs CP210x VCP driver if the board does not appear as `COMx` on Windows or as a serial device on Linux/macOS.
+
+Driver:
+
+```text
+https://www.silabs.com/software-and-tools/usb-to-uart-bridge-vcp-drivers
+```
+
+### Features
+
+- Opens the selected serial port.
+- Lists available serial ports with `--list`.
+- Supports custom baudrate with `--baud`.
+- Supports disabling DTR reset with `--no-reset`.
+- Forwards keyboard arrow keys to the ESP32.
 - Forwards ENTER and BACKSPACE.
 - Forwards digit input.
 - Displays serial output from the device.
-- Uses an alternate terminal screen.
 - Press `q` to quit.
 
-Current limitations:
+### Controls
+
+| Key | Action |
+|---|---|
+| Arrow keys | Menu navigation |
+| Enter | Select / confirm |
+| Backspace | Delete / go back in supported input contexts |
+| Digits `0-9` | PIN or numeric input |
+| `q` | Quit terminal helper |
+
+### Usage on Windows
+
+List available serial ports:
+
+```powershell
+py wallet_terminal.py --list
+```
+
+Run the terminal helper:
+
+```powershell
+py wallet_terminal.py COM5
+```
+
+Run with explicit baudrate:
+
+```powershell
+py wallet_terminal.py COM5 --baud 115200
+```
+
+Run without toggling DTR reset:
+
+```powershell
+py wallet_terminal.py COM5 --no-reset
+```
+
+### Usage on Linux/macOS
+
+List available serial ports:
+
+```bash
+python3 wallet_terminal.py --list
+```
+
+Run the terminal helper:
+
+```bash
+python3 wallet_terminal.py /dev/ttyUSB0
+```
+
+Run with explicit baudrate:
+
+```bash
+python3 wallet_terminal.py /dev/ttyUSB0 --baud 115200
+```
+
+Run without toggling DTR reset:
+
+```bash
+python3 wallet_terminal.py /dev/ttyUSB0 --no-reset
+```
+
+### Current limitations
 
 - The terminal display mirror is not perfect yet.
 - Some redraw behavior may not exactly match the TFT output.
 - The tool is currently most useful as an input bridge for keyboard-arrow navigation.
 - The current demo video uses this tool rather than the physical joystick.
-
-Default configuration:
-
-```python
-WalletTerminal(port='/dev/ttyUSB0', baudrate=115200)
-```
-
-Example usage:
-
-```bash
-python3 wallet_terminal.py
-```
-
-If your ESP32 appears on a different serial port, edit the port value in the script.
 
 ## 📦 Software Requirements
 
@@ -529,6 +634,7 @@ Arduino/C++ firmware:
 
 - Arduino IDE or compatible build environment
 - ESP32 Arduino core
+- Silicon Labs CP210x VCP driver for CP2102-based ESP32 boards
 - `Adafruit_GFX`
 - `Adafruit_ST7735`
 - `SPI`
@@ -542,7 +648,14 @@ Python terminal helper:
 - Python 3
 - `pyserial`
 
-Install Python dependency:
+Operating-system-specific modules used by the terminal helper:
+
+| Operating system | Built-in modules used |
+|---|---|
+| Windows | `msvcrt` |
+| Linux/macOS | `termios`, `tty`, `select` |
+
+Only `pyserial` needs to be installed manually:
 
 ```bash
 pip install pyserial
@@ -555,7 +668,7 @@ pip install pyserial
 3. Open the main firmware sketch:
 
 ```text
-firmware/crypto-wallet-dual/crypto-wallet-dual.ino
+crypto-wallet-dual/crypto-wallet-dual.ino
 ```
 
 4. Make sure all `.h` and `.cpp` files are in the same Arduino sketch folder.
@@ -570,7 +683,7 @@ Currently implemented or partially implemented:
 - TFT display initialization
 - Main menu rendering
 - Serial display mirroring
-- Keyboard-arrow navigation through Python serial terminal
+- Keyboard-arrow navigation through cross-platform Python serial terminal
 - PIN setup
 - PIN unlock
 - Wallet lock
@@ -586,7 +699,7 @@ Currently implemented or partially implemented:
 - EEPROM clear helper
 - LCD test helper
 - Joystick test helper
-- Experimental Python serial terminal helper
+- Experimental cross-platform Python serial terminal helper with OS detection and serial port listing
 - Partial joystick input integration
 
 ## 🛠️ Not Implemented Yet
@@ -614,23 +727,26 @@ Planned or incomplete:
 
 Planned development steps:
 
-1. Improve Python terminal mirroring.
-2. Finish joystick-driven navigation flow.
-3. Add wiring diagram.
-4. Clean and document helper sketches.
-5. Integrate ATECC608A over I2C.
-6. Test secure element detection.
-7. Move private key generation/storage to ATECC608A.
-8. Implement secure signing flow.
-9. Replace prototype address generation with a standard derivation flow.
-10. Add blockchain balance retrieval.
-11. Add stricter PIN retry policy.
-12. Add proper threat model documentation.
-13. Design enclosure or compact hardware layout.
+1. Add breadboard photo.
+2. Add demo video.
+3. Reorganize repository into `firmware/`, `tools/`, and `docs/media/`.
+4. Improve Python terminal mirroring.
+5. Finish joystick-driven navigation flow.
+6. Add wiring diagram.
+7. Clean and document helper sketches.
+8. Integrate ATECC608A over I2C.
+9. Test secure element detection.
+10. Move private key generation/storage to ATECC608A.
+11. Implement secure signing flow.
+12. Replace prototype address generation with a standard derivation flow.
+13. Add blockchain balance retrieval.
+14. Add stricter PIN retry policy.
+15. Add proper threat model documentation.
+16. Design enclosure or compact hardware layout.
 
-## 📝 Documentation Improvement
+## 📝 Suggested Documentation Improvements
 
-Additional files:
+Recommended additional files:
 
 ```text
 docs/
@@ -642,7 +758,7 @@ docs/
     └── current-demo.mp4
 ```
 
-Planned `wiring.md` contents:
+Recommended `wiring.md` contents:
 
 - Component list
 - Pin table
@@ -653,7 +769,7 @@ Planned `wiring.md` contents:
 - ATECC608A planned wiring
 - Known hardware issues
 
-Planned `threat-model.md` contents:
+Recommended `threat-model.md` contents:
 
 - What the prototype protects against
 - What it does not protect against
