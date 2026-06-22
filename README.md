@@ -548,52 +548,6 @@ Install Python dependency:
 pip install pyserial
 ```
 
-## 📁 Recommended Repository Structure
-
-Recommended professional structure:
-
-```text
-esp32-atecc608a-crypto-wallet/
-├── README.md
-├── LICENSE
-├── docs/
-│   └── media/
-│       ├── breadboard-current.jpg
-│       └── current-demo.mp4
-├── firmware/
-│   └── crypto-wallet-dual/
-│       ├── crypto-wallet-dual.ino
-│       ├── DisplayManager.cpp
-│       ├── DisplayManager.h
-│       ├── InputFacade.cpp
-│       ├── InputFacade.h
-│       ├── InputManager.cpp
-│       ├── InputManager.h
-│       ├── StateManager.cpp
-│       ├── StateManager.h
-│       ├── WalletCore.cpp
-│       └── WalletCore.h
-└── tools/
-    ├── wallet-terminal/
-    │   └── wallet_terminal.py
-    ├── clear-eeprom/
-    │   └── clear-eeprom.ino
-    ├── joystick-test/
-    │   └── joystick-test.ino
-    └── test-lcd/
-        └── test-lcd.ino
-```
-
-This structure keeps the repository clean:
-
-- `firmware/` contains the main ESP32 wallet firmware.
-- `tools/` contains helper utilities and standalone test sketches.
-- `docs/media/` contains photos and demo videos.
-- `README.md` documents the project from the repository root.
-- `LICENSE` contains the project license.
-
-> Arduino IDE note: each `.ino` sketch should remain inside a folder with the same name as the sketch file. For example, `crypto-wallet-dual.ino` should remain inside a folder named `crypto-wallet-dual`.
-
 ## 🚀 Build and Upload
 
 1. Install the ESP32 Arduino core.
@@ -660,26 +614,23 @@ Planned or incomplete:
 
 Planned development steps:
 
-1. Add breadboard photo.
-2. Add demo video.
-3. Reorganize repository into `firmware/`, `tools/`, and `docs/media/`.
-4. Improve Python terminal mirroring.
-5. Finish joystick-driven navigation flow.
-6. Add wiring diagram.
-7. Clean and document helper sketches.
-8. Integrate ATECC608A over I2C.
-9. Test secure element detection.
-10. Move private key generation/storage to ATECC608A.
-11. Implement secure signing flow.
-12. Replace prototype address generation with a standard derivation flow.
-13. Add blockchain balance retrieval.
-14. Add stricter PIN retry policy.
-15. Add proper threat model documentation.
-16. Design enclosure or compact hardware layout.
+1. Improve Python terminal mirroring.
+2. Finish joystick-driven navigation flow.
+3. Add wiring diagram.
+4. Clean and document helper sketches.
+5. Integrate ATECC608A over I2C.
+6. Test secure element detection.
+7. Move private key generation/storage to ATECC608A.
+8. Implement secure signing flow.
+9. Replace prototype address generation with a standard derivation flow.
+10. Add blockchain balance retrieval.
+11. Add stricter PIN retry policy.
+12. Add proper threat model documentation.
+13. Design enclosure or compact hardware layout.
 
-## 📝 Suggested Documentation Improvements
+## 📝 Documentation Improvement
 
-Recommended additional files:
+Additional files:
 
 ```text
 docs/
@@ -691,7 +642,7 @@ docs/
     └── current-demo.mp4
 ```
 
-Recommended `wiring.md` contents:
+Planned `wiring.md` contents:
 
 - Component list
 - Pin table
@@ -702,7 +653,7 @@ Recommended `wiring.md` contents:
 - ATECC608A planned wiring
 - Known hardware issues
 
-Recommended `threat-model.md` contents:
+Planned `threat-model.md` contents:
 
 - What the prototype protects against
 - What it does not protect against
