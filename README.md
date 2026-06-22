@@ -52,7 +52,7 @@ This project should be treated as an embedded security and wallet UI prototype, 
 
 ### Current Breadboard Prototype
 
-![Current breadboard prototype](docs/media/breadboard-current.jpg)
+![Current breadboard prototype](assets/breadboard-current.jpg)
 
 The current prototype uses a NodeMCU-ESP32 / ESP32 DEVKITV1 board, an ST7735S SPI TFT display, an HW-504 joystick module, and a WCMCU ATECC608A secure element module on a breadboard.
 
