@@ -58,7 +58,7 @@ The current prototype uses a NodeMCU-ESP32 / ESP32 DEVKITV1 board, an ST7735S SP
 
 ### Current Functionality Demo
 
-[Current functionality demo](docs/media/current-demo.mp4)
+[Current functionality demo](https://youtu.be/QcOi_GpRFTY)
 
 The current demo video shows the prototype being controlled through the Python serial terminal helper using keyboard arrow keys.
 
