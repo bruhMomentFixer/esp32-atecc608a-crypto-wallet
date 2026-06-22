@@ -727,38 +727,32 @@ Planned or incomplete:
 
 Planned development steps:
 
-1. Add breadboard photo.
-2. Add demo video.
-3. Reorganize repository into `firmware/`, `tools/`, and `docs/media/`.
-4. Improve Python terminal mirroring.
-5. Finish joystick-driven navigation flow.
-6. Add wiring diagram.
-7. Clean and document helper sketches.
-8. Integrate ATECC608A over I2C.
-9. Test secure element detection.
-10. Move private key generation/storage to ATECC608A.
-11. Implement secure signing flow.
-12. Replace prototype address generation with a standard derivation flow.
-13. Add blockchain balance retrieval.
-14. Add stricter PIN retry policy.
-15. Add proper threat model documentation.
-16. Design enclosure or compact hardware layout.
+1. Improve Python terminal mirroring.
+2. Finish joystick-driven navigation flow.
+3. Add wiring diagram.
+4. Clean and document helper sketches.
+5. Integrate ATECC608A over I2C.
+6. Test secure element detection.
+7. Move private key generation/storage to ATECC608A.
+8. Implement secure signing flow.
+9. Replace prototype address generation with a standard derivation flow.
+10. Add blockchain balance retrieval.
+11. Add stricter PIN retry policy.
+12. Add proper threat model documentation.
+13. Design enclosure or compact hardware layout.
 
-## 📝 Suggested Documentation Improvements
+## 📝 Planned Documentation
 
-Recommended additional files:
+Additional files:
 
 ```text
 docs/
 ├── wiring.md
 ├── threat-model.md
-├── roadmap.md
-└── media/
-    ├── breadboard-current.jpg
-    └── current-demo.mp4
+└── roadmap.md
 ```
 
-Recommended `wiring.md` contents:
+Planned `wiring.md` content:
 
 - Component list
 - Pin table
@@ -769,7 +763,7 @@ Recommended `wiring.md` contents:
 - ATECC608A planned wiring
 - Known hardware issues
 
-Recommended `threat-model.md` contents:
+Planned `threat-model.md` content:
 
 - What the prototype protects against
 - What it does not protect against
